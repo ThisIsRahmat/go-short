@@ -51,9 +51,11 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
+	db_dsn := os.Getenv("POSTGRESS_DSN")
+
 	// Read the DSN value from the db-dsn command-line flag into the config struct. We
 	// default to using our development DSN if no flag is provided.
-	flag.StringVar(&cfg.db.dsn, "db-dsn", , "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", db_dsn, "PostgreSQL DSN")
 
 	// Read the connection pool settings from command-line flags into the config struct.
 	// Notice that the default values we're using are the ones we discussed above?
@@ -95,8 +97,8 @@ func main() {
 	//declare a new servermux and add a /v1/healthckec rout to dispatch requests to healthckechHandler method
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/healthcheck", app.healthcheckHandler)
-	mux.HandleFunc("/v1/", app.createShortURLHandler)
+	mux.HandleFunc("/healthcheck", app.healthcheckHandler)
+	mux.HandleFunc("/", app.createShortURLHandler)
 
 	// Declare a HTTP server which listens on the port provided in the config struct,
 	// uses the servemux we created above as the handler, has some sensible timeout
@@ -121,9 +123,13 @@ func main() {
 
 func openDB(cfg config) (*sql.DB, error) {
 
+	//get environment variable of the postgress dsn
+
+	// db_dsn := os.Getenv("POSTGRESS_DSN")
+
 	// Use sql.Open() to create an empty connection pool, using the DSN from the config
 	// struct.
-	db, err := sql.Open("postgres", cfg.db.dsn)
+	db, err := sql.Open("postgres", "user=go_short password=secret dbname=go_short sslmode=disable")
 	if err != nil {
 		return nil, err
 	}
